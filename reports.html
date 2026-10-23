@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<title>Saved reports — Researchly</title></head>
+<body><div class="app"><aside id="side"></aside><main><header class="top" id="top"></header><div class="content">
+<div class="row" style="justify-content:space-between"><h1 style="font-size:34px">Saved reports</h1>
+<div class="row"><a class="btn" href="workspace.html">New report</a><button class="btn ghost" id="refresh">Refresh</button></div></div>
+<input id="search" type="search" placeholder="Search your reports by topic" aria-label="Search reports" style="margin:6px 0 18px">
+<div class="message" id="reportsMessage" role="alert"></div>
+<div class="rgrid" id="list"></div><div id="empty"></div>
+</div></main></div>
+<script src="js/app.js"></script>
+<script>
+mountShell("reports.html");
+let all=[];
+function draw(){const q=$("search").value.trim().toLowerCase();const L=$("list");L.replaceChildren();$("empty").replaceChildren();
+const rows=all.filter(r=>(r.topic||r.title||"").toLowerCase().includes(q));
+if(!rows.length){const e=el("div","empty",all.length?"No report matches that search.":"No saved reports yet. Generate your first one from the Research page.");$("empty").append(e);return;}
+rows.forEach(r=>{const a=el("a","rcard");a.href="report.html?id="+encodeURIComponent(r.id);
+a.append(el("strong","",r.topic||r.title||"Report #"+r.id),el("span","small",fmtDate(r.created_at)));L.append(a);});}
+async function load(){clearMessage("reportsMessage");$("empty").replaceChildren(el("div","empty","Loading saved reports…"));
+try{all=normalizeReports(await api("/reports"));draw();}catch(e){$("empty").replaceChildren();showMessage("reportsMessage",e.message);}}
+$("refresh").onclick=load;$("search").oninput=draw;load();
+</script></body></html>

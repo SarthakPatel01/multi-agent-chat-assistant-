@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<title>Report — Researchly</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script></head>
+<body><div class="app"><aside id="side"></aside><main><header class="top" id="top"></header><div class="content">
+<p><a href="reports.html">← All saved reports</a></p>
+<div class="message" id="msg" role="alert"></div>
+<section class="panel" id="panel" hidden>
+<div class="row" style="justify-content:space-between"><h2 id="title">Report</h2>
+<div class="row"><button class="btn ghost" id="copyBtn">Copy</button><button class="btn ghost" id="downloadBtn">Download .md</button></div></div>
+<p class="small" id="meta"></p><article class="report-body" id="body"></article></section>
+</div></main></div>
+<script src="js/app.js"></script>
+<script>
+mountShell("reports.html");
+let md="";
+(async()=>{const id=new URLSearchParams(location.search).get("id");
+if(!id)return showMessage("msg","No report selected. Pick one from your saved reports.");
+try{const d=await api("/reports/"+encodeURIComponent(id));md=getReportText(d);
+$("title").textContent=d.topic||d.title||"Saved report";document.title=$("title").textContent+" — Researchly";
+$("meta").textContent=d.created_at?"Saved "+fmtDate(d.created_at):"Saved report";renderMd($("body"),md);$("panel").hidden=false;
+}catch(e){showMessage("msg",e.message);}})();
+$("copyBtn").onclick=()=>copyText($("copyBtn"),md);
+$("downloadBtn").onclick=()=>downloadMd($("title").textContent,md);
+</script></body></html>

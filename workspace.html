@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<title>Research — Researchly</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script></head>
+<body><div class="app"><aside id="side"></aside><main><header class="top" id="top"></header><div class="content">
+<h1>Start a research task</h1>
+<section class="panel"><form id="researchForm">
+<label for="topic">Research topic</label>
+<textarea id="topic" minlength="3" maxlength="500" required placeholder="For example: How generative AI is changing software development"></textarea>
+<p class="small"><span id="charCount">0</span>/500 characters</p>
+<div class="row">
+<button class="btn ghost suggestion" type="button" data-topic="Recent applications of AI in healthcare">AI in healthcare</button>
+<button class="btn ghost suggestion" type="button" data-topic="Recent breakthroughs in quantum computing">Quantum computing</button>
+<button class="btn ghost suggestion" type="button" data-topic="How generative AI is changing software development">Generative AI</button></div>
+<button class="btn full" id="researchSubmit" type="submit">Generate research report</button>
+<div class="message" id="researchMessage" role="alert"></div></form></section>
+<section class="panel" id="progress" hidden><h2>Working on it</h2>
+<ol class="steps" id="steps"><li>Search for information</li><li>Read and analyze sources</li><li>Write the report</li><li>Review and save the output</li></ol></section>
+<section class="panel" id="reportPanel" hidden>
+<div class="row" style="justify-content:space-between"><h2 id="reportTitle">Research output</h2>
+<div class="row"><a class="btn ghost" id="openSaved" href="reports.html" hidden>Open in saved reports</a>
+<button class="btn ghost" id="copyBtn">Copy</button><button class="btn ghost" id="downloadBtn">Download .md</button></div></div>
+<p class="small" id="reportMeta"></p><article class="report-body" id="reportBody"></article></section>
+</div></main></div>
+<script src="js/app.js"></script>
+<script>
+mountShell("workspace.html");
+let md="",timer;
+$("topic").addEventListener("input",()=>$("charCount").textContent=$("topic").value.length);
+document.querySelectorAll(".suggestion").forEach(b=>b.onclick=()=>{$("topic").value=b.dataset.topic;$("charCount").textContent=b.dataset.topic.length;$("topic").focus();});
+function runSteps(on){const li=[...$("steps").children];clearInterval(timer);$("progress").hidden=!on&&!li.length;
+if(!on){li.forEach(x=>x.className="done");return;}
+li.forEach(x=>x.className="");let i=0;li[0].className="on";
+timer=setInterval(()=>{if(i<li.length-1){li[i].className="done";i++;li[i].className="on";}},4000);}
+$("researchForm").addEventListener("submit",async(e)=>{e.preventDefault();clearMessage("researchMessage");
+const topic=$("topic").value.trim();if(topic.length<3)return showMessage("researchMessage","Enter a topic with at least 3 characters.");
+const b=$("researchSubmit");b.disabled=true;b.textContent="Researching…";$("reportPanel").hidden=true;$("progress").hidden=false;runSteps(true);
+try{const d=await api("/research",{method:"POST",body:JSON.stringify({topic})});
+md=getReportText(d);renderMd($("reportBody"),md);runSteps(false);
+$("reportTitle").textContent=topic;$("reportMeta").textContent="Generated "+fmtDate(new Date());
+const o=$("openSaved");if(d.id!==undefined){o.href="report.html?id="+encodeURIComponent(d.id);o.hidden=false;}
+$("reportPanel").hidden=false;$("reportPanel").scrollIntoView({behavior:"smooth"});
+showMessage("researchMessage","Report generated and saved to your account.","success");
+}catch(err){clearInterval(timer);$("progress").hidden=true;showMessage("researchMessage",err.message);}
+finally{b.disabled=false;b.textContent="Generate research report";}});
+$("copyBtn").onclick=()=>copyText($("copyBtn"),md);
+$("downloadBtn").onclick=()=>downloadMd($("reportTitle").textContent,md);
+</script></body></html>

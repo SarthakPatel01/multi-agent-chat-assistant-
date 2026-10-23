@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<title>Log in — Researchly</title></head>
+<body><div class="authwrap">
+<a class="brand" href="index.html" style="color:#141a2b;margin:0 0 18px">research<span>ly</span></a>
+<section class="panel"><h2 id="authTitle">Welcome back</h2>
+<p class="small" id="authSub">Log in to open your workspace and saved reports.</p>
+<div class="tabs"><button class="tab active" id="loginTab" type="button">Log in</button><button class="tab" id="registerTab" type="button">Register</button></div>
+<form id="authForm">
+<div id="nameField" hidden><label for="authName">Full name</label><input id="authName" autocomplete="name" maxlength="100"></div>
+<label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="email" required maxlength="254">
+<label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" required minlength="8">
+<button class="btn full" id="authSubmit" type="submit">Log in</button>
+<div class="message" id="authMessage" role="alert"></div></form></section>
+<p class="small" style="text-align:center"><a href="index.html">Back to home</a></p></div>
+<script src="js/app.js"></script>
+<script>
+const params=new URLSearchParams(location.search);
+const next=/^[a-z]+\.html(\?id=[\w-]+)?$/i.test(params.get("next")||"")?params.get("next"):"workspace.html";
+if(token())location.replace(next);
+let mode="login";
+function setMode(m){mode=m;const r=m==="register";$("nameField").hidden=!r;$("authName").required=r;
+$("authPassword").autocomplete=r?"new-password":"current-password";$("authSubmit").textContent=r?"Create account":"Log in";
+$("authTitle").textContent=r?"Create your account":"Welcome back";
+$("loginTab").classList.toggle("active",!r);$("registerTab").classList.toggle("active",r);clearMessage("authMessage");}
+$("loginTab").onclick=()=>setMode("login");$("registerTab").onclick=()=>setMode("register");
+if(params.get("mode")==="register")setMode("register");
+if(params.get("out"))showMessage("authMessage","You have logged out.","success");
+if(params.get("expired"))showMessage("authMessage","Your session expired. Please log in again.");
+$("authForm").addEventListener("submit",async(e)=>{e.preventDefault();clearMessage("authMessage");$("authSubmit").disabled=true;
+const email=$("authEmail").value.trim(),password=$("authPassword").value;
+try{
+if(mode==="register"){await api("/register",{method:"POST",body:JSON.stringify({name:$("authName").value.trim(),email,password})});
+setMode("login");$("authEmail").value=email;$("authPassword").value="";showMessage("authMessage","Account created. You can now log in.","success");}
+else{const f=new URLSearchParams();f.set("username",email);f.set("password",password);
+const d=await api("/login",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:f});
+if(!d.access_token)throw new Error("Login response did not include access_token.");
+localStorage.setItem(TOKEN_KEY,d.access_token);location.href=next;}
+}catch(err){showMessage("authMessage",err.message);}finally{$("authSubmit").disabled=false;}});
+</script></body></html>

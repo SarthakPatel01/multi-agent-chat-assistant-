@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<title>Account — Researchly</title></head>
+<body><div class="app"><aside id="side"></aside><main><header class="top" id="top"></header><div class="content">
+<h1 style="font-size:34px">Your account</h1>
+<section class="panel">
+<div class="kv"><span>Name</span><span id="aName">Loading…</span></div>
+<div class="kv"><span>Email</span><span id="aEmail">Loading…</span></div>
+<div class="kv"><span>Saved reports</span><span id="aCount">Loading…</span></div>
+<div class="message" id="msg" role="alert"></div>
+<div class="row" style="margin-top:18px"><a class="btn ghost" href="reports.html">View reports</a><button class="btn danger" id="out">Log out</button></div>
+</section></div></main></div>
+<script src="js/app.js"></script>
+<script>
+mountShell("account.html");$("out").onclick=logout;
+(async()=>{try{const u=await api("/me");$("aName").textContent=u.name||"Not set";$("aEmail").textContent=u.email||"Not available";}
+catch(e){showMessage("msg",e.message);}
+try{$("aCount").textContent=normalizeReports(await api("/reports")).length;}catch{$("aCount").textContent="Unavailable";}})();
+</script></body></html>
