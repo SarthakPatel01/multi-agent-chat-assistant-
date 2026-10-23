@@ -35,6 +35,7 @@ app = FastAPI(title="AI Research Platform", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://multi-agent-chat-assistant-rilv.onrender.com"
         "http://127.0.0.1:5500",
         "http://localhost:5500",
         "http://127.0.0.1:8000",
