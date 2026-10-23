@@ -1,6 +1,6 @@
 // Shared helpers for every Researchly page.
 // Change this to your deployed FastAPI URL (or set window.RESEARCHLY_API before this script).
-const API_BASE_URL = window.RESEARCHLY_API || "http://127.0.0.1:8000";
+const API_BASE_URL = window.RESEARCHLY_API || "https://multi-agent-chat-assistant.onrender.com";
 const TOKEN_KEY = "researchly_access_token";
 const NAV = [["workspace.html", "Research"], ["reports.html", "Saved reports"], ["account.html", "Account"]];
 const $ = (id) => document.getElementById(id);
